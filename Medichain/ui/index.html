@@ -1,0 +1,91 @@
+         <!DOCTYPE html>
+         <html>
+         <head>
+             <meta charset='utf-8'>
+             <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+             <title>Web 3 Demo</title>
+             <meta name='viewport' content='width=device-width, initial-scale=1'>
+             <script src='web3.min.js'></script>
+         </head>
+         <body>
+             Web 3 Demo
+             <br >
+             <button onclick="printCoolNumber();">Print Cool Number</button>
+             <button onclick="changeCoolNumber();">Change Cool Number</button>
+             <br /><br />
+             Status: <span id="status">Loading...</span>
+             <script type="text/javascript">
+                 async function loadWeb3() {
+                     // develop: needs ganache-cli running
+                     window.web3 = new Web3(new Web3.providers.HttpProvider("http://smart1.zeniq.network:8545"));
+                     // use: needs metamask addon
+                     // // the line below does not work, because the execution needs fee and therefor an account that pays
+                     // // window.web3 = new Web3(new Web3.providers.HttpProvider("https://smart1.zeniq.network:9545"));
+                     // window.web3 = new Web3(window.ethereum);
+                     // window.ethereum.enable();
+                     // // In metamask set the active network to smart zeniq and it must have balance
+                 }
+                 async function loadContract() {
+                     return await new window.web3.eth.Contract([
+                         {
+                             "inputs": [],
+                             "name": "n",
+                             "outputs": [
+                                 {
+                                     "internalType": "uint256",
+                                     "name": "",
+                                     "type": "uint256"
+                                 }
+                             ],
+                             "stateMutability": "view",
+                             "type": "function"
+                         },
+                         {
+                             "inputs": [
+                                 {
+                                     "internalType": "uint256",
+                                     "name": "_n",
+                                     "type": "uint256"
+                                 }
+                             ],
+                             "name": "setn",
+                             "outputs": [],
+                             "stateMutability": "nonpayable",
+                             "type": "function"
+                         }
+                     ],
+                     // develop: todo replace with yours after `truffle migrate`
+                     '0x05Fe9db84E91356048059576bC2cb8A436B0a2de');
+                     // use: todo replace with yours
+                     // '0x0711150788965F84Af90571D24Bc42174850683a');
+                 }
+                 async function printCoolNumber() {
+                     updateStatus('fetching Cool Number...');
+                     const coolNumber = await window.contract.methods.n().call();
+                     updateStatus(`coolNumber: ${coolNumber}`);
+                 }
+                 async function getCurrentAccount() {
+                     const accounts = await window.web3.eth.getAccounts();
+                     return accounts[0];r
+                 }
+                 async function changeCoolNumber() {
+                     const value = Math.floor(Math.random() * 100);
+                     updateStatus(`Updating coolNumber with ${value}`);
+                     const account = await getCurrentAccount();
+                     const coolNumber = await window.contract.methods.setn(value).send({ from: account });
+                     updateStatus('Updated.');
+                 }
+                 async function load() {
+                     await loadWeb3();
+                     window.contract = await loadContract();
+                     updateStatus('Ready!');
+                 }
+                 function updateStatus(status) {
+                     const statusEl = document.getElementById('status');
+                     statusEl.innerHTML = status;
+                     console.log(status);
+                 }
+                 load();
+             </script>
+         </body>
+         </html>
